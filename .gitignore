@@ -2,3 +2,6 @@ __pycache__/
 ~$*
 output/**/preview_*.png
 example/*.docx
+
+.agents/
+skills-lock.json
