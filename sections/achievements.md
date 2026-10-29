@@ -1,9 +1,11 @@
 # Achievements
 
-## Achiever Extraordinaire — Ernst & Young (EY)
+<!--
+Awards, recognitions, competition results, rankings, publications you want
+listed separately, leadership roles.
 
-- Date:
-- skills:
-- themes: recognition
-- proficiency: familiar
-- detailed: Recognized as Achiever Extraordinaire at Ernst & Young (EY).
+## <Title>
+- org: who gave it or where it happened
+- date: MONTH YYYY
+-->
+

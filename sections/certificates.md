@@ -1,31 +1,22 @@
 # Certificates
 
-## Databricks Certified Data Engineer Associate
+<!--
+One `##` block per certificate, named exactly as the issuer names it.
 
-- Issuer: Databricks
-- Date:
-- Credential:
-- Link:
-- skills: Databricks
-- themes: data engineering, certification
-- proficiency: familiar
+## <Certificate name>
+- issuer:
+- date: Month YYYY
+- link: verification URL
+-->
 
-## GitHub Copilot
+## Cloud Practitioner
 
-- Issuer: Microsoft
-- Date:
-- Credential:
-- Link:
-- skills: GitHub Copilot
-- themes: developer tools, certification
-- proficiency: unspecified
+- issuer: Example Cloud
+- date: January 2025
+- link: https://example.com/certs/cloud-practitioner
 
-## Databricks Certified Generative AI Engineer Associate
+## Data Fundamentals
 
-- Issuer: Databricks
-- Date:
-- Credential:
-- Link:
-- skills: Databricks
-- themes: generative AI, certification
-- proficiency: familiar
+- issuer: Example Institute
+- date: June 2024
+- link: https://example.com/certs/data-fundamentals
