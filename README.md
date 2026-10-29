@@ -34,11 +34,7 @@ The agent must not invent employers, titles, dates, skills, tools, responsibilit
 
 ### 1. Install requirements
 
-Requires Windows, Microsoft Word, and Python 3.
-
-```bash
-pip install -r requirements.txt
-```
+Requires Python 3. On Windows, Microsoft Word exports the PDF. On Linux, LibreOffice does.
 
 ### 2. Add your career information
 
@@ -52,7 +48,9 @@ Keep the ledger current. It is the source of truth for every resume.
 
 Copy `jobs/_template/` to a new folder, such as `jobs/Company_Role/`. Add the job description or URL to `posting.md`. Use `notes.md` if you want to indicate what to emphasize or leave out.
 
-Then let your configured agent follow `AGENTS.md` and `rules.md`. It will generate the resume under `output/Company_Role/`.
+### 4. Ask the agent to make the resume
+
+Tell the agent: "Build resumes." It follows `AGENTS.md` and `rules.md`, and writes the resume under `output/Company_Role/`.
 
 ## Outputs
 
@@ -97,7 +95,11 @@ Resume Ledger/
 
 ## Design and rendering
 
-The agent does not choose fonts, margins, spacing, or layout. Those are controlled by the base Word template and `tools/make_base.py`. The renderer fills the template, exports a PDF through Microsoft Word, and measures the result to check page-fit constraints.
+Every resume uses one structure. The words change from job to job. The page does not.
+
+The only sections, in this order, are Education, Experience, Projects, Skills, and Certificates. There is no summary and no achievements section. A section with nothing to say is left off the page. `tools/render.py` rejects any other heading, and it rejects these headings in any other order.
+
+The page is always A4, Times New Roman, with one right-hand column for dates and locations, and 10 pt text on every bullet. Experience bullets may run to 4 lines. Every other bullet may run to 2. An agent building a resume is not allowed to change any of this.
 
 To preview a rendered resume:
 
@@ -105,7 +107,22 @@ To preview a rendered resume:
 python tools/render.py output/Company_Role/v1/resume.md --preview --max-pages 1
 ```
 
-Adjust the layout in `tools/make_base.py` and rebuild the template only when you want to change the design for future resumes. Previously generated versions remain unchanged.
+The renderer fills `base/base_resume.docx`, asks Microsoft Word (Windows) or LibreOffice (Linux) to export a PDF, and measures that PDF for the page-fit check. Install Times New Roman on Linux so LibreOffice can match the page.
+
+### Changing the structure
+
+Change it only when you want every future resume to look different. Resumes already rendered stay as they are.
+
+1. Edit the constants at the top of `tools/make_base.py`. `SECTIONS` is the section names and their order. The other constants are the page: margins, font, sizes, line spacing, and where the date column sits.
+2. Rebuild the template:
+
+```bash
+python tools/make_base.py
+```
+
+3. Update section 7 of `rules.md` so the agent writes the new shape. The script only accepts headings that are in the template.
+
+A new section name is not enough if the lines inside it should work differently. The 4-line limit is hardcoded in `tools/render.py` for a section named Experience. A two-column layout, a photo, or a summary with its own line style means changing that script as well, not only the template. Do not edit `base/base_resume.docx` by hand. The next rebuild overwrites it.
 
 ## Core principle
 

@@ -37,7 +37,10 @@ the right-hand column), not only a page overflow.
 import argparse
 import copy
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from docx import Document
@@ -307,7 +310,63 @@ def discard_failed_pdf(pdf_path):
         print(f"removed pdf left from the failed export: {pdf_path}", file=sys.stderr)
 
 
-def export_pdf(docx_path, pdf_path):
+def libreoffice_executable():
+    found = shutil.which("soffice") or shutil.which("libreoffice")
+    if found:
+        return found
+    for candidate in (
+        "/usr/bin/soffice",
+        "/usr/bin/libreoffice",
+        "/usr/lib/libreoffice/program/soffice",
+    ):
+        if Path(candidate).is_file():
+            return candidate
+    return None
+
+
+def export_with_libreoffice(docx_path, pdf_path):
+    binary = libreoffice_executable()
+    if binary is None:
+        print(
+            "error: LibreOffice is not installed; PDF export failed. "
+            "Install it and make sure `soffice` is on PATH.",
+            file=sys.stderr,
+        )
+        discard_failed_pdf(pdf_path)
+        return False
+
+    with tempfile.TemporaryDirectory(prefix="resume-lo-") as profile:
+        command = [
+            binary,
+            f"-env:UserInstallation={Path(profile).resolve().as_uri()}",
+            "--headless",
+            "--norestore",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            str(pdf_path.parent),
+            str(docx_path),
+        ]
+        try:
+            result = subprocess.run(
+                command, capture_output=True, text=True, timeout=120)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            print(f"error: LibreOffice export failed ({exc})", file=sys.stderr)
+            discard_failed_pdf(pdf_path)
+            return False
+
+    produced = pdf_path.parent / f"{docx_path.stem}.pdf"
+    if result.returncode != 0 or not produced.is_file():
+        detail = (result.stderr or result.stdout or "no PDF was written").strip()
+        print(f"error: LibreOffice export failed ({detail})", file=sys.stderr)
+        discard_failed_pdf(pdf_path)
+        return False
+    if produced.resolve() != pdf_path.resolve():
+        produced.replace(pdf_path)
+    return True
+
+
+def export_with_word(docx_path, pdf_path):
     try:
         import pythoncom
         import win32com.client
@@ -357,6 +416,13 @@ def export_pdf(docx_path, pdf_path):
         discard_failed_pdf(pdf_path)
         return False
     return True
+
+
+def export_pdf(docx_path, pdf_path):
+    """Word on Windows. LibreOffice everywhere else, including Linux."""
+    if sys.platform == "win32":
+        return export_with_word(docx_path, pdf_path)
+    return export_with_libreoffice(docx_path, pdf_path)
 
 
 def plain(text):
